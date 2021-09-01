@@ -3,7 +3,10 @@ package org.testcontainers.repro;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 public class ReproExampleTest {
@@ -22,8 +25,13 @@ public class ReproExampleTest {
     public void demonstration() {
         try (
             // customize the creation of a container as required
-            GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("redis:6.0.5"))
-                    .withExposedPorts(6379)
+            GenericContainer<?> container = new GenericContainer(DockerImageName.parse("registry.gitlab.com/linkedopenactors/loa-suite:feature-testcontainer"))
+            .withExposedPorts(8080)
+            .withEnv("SPRING_PROFILES_ACTIVE", "test")
+            .withFileSystemBind("/tmp/dockerVolumes/", "/mnt/spring/", BindMode.READ_WRITE)
+            .withLogConsumer(new Slf4jLogConsumer(LOG))
+            .waitingFor(Wait.forHttp("/swagger-ui.html"));
+
         ) {
             container.start();
 
